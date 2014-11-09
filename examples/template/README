@@ -1,0 +1,26 @@
+Replace the placeholder @@NAME@@ in all files with the app name:
+
+    find -type f | while read file ; do
+        sed -i 's/@@NAME@@/$NAME/g" $file
+    done
+
+    mv scripts/bloonix-name scripts/bloonix-$NAME
+
+Create a link to the configuration file or move the configuration to /etc/bloonix/$NAME
+
+    ln -s /srv/bloonix/$NAME/etc /etc/bloonix/$NAME
+
+    # OR
+
+    cp -a etc /etc/bloonix/$NAME
+
+Set the user and group of all files (www-data or nginx):
+
+    chown -R bloonix:www-data /srv/bloonix/$NAME
+    chown -R bloonix:bloonix /etc/bloonix/$NAME
+
+Start the app with
+
+    /srv/bloonix/$NAME/scripts/bloonix-$NAME --config-file /etc/bloonix/$NAME/main.conf --pid-file /var/run/bloonix/bloonix-$NAME.pid
+
+Ready!

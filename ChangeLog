@@ -1,0 +1,18 @@
+bloonix-heaven (0.4) released at 2014-11-03
+
+    * Updated the license information.
+
+bloonix-heaven (0.3) released at 2014-10-24
+
+    * Disable die_on_errors by default so that the logger
+      does not die on errors.
+
+bloonix-heaven (0.2) released at 2014-10-16
+
+    * Improved the error handling.
+    * Added parameter "minimal" to validate().
+    * Deleted ModelLoader.pm.
+
+bloonix-heaven (0.1) released at 2011-02-04
+
+    * Initial release.

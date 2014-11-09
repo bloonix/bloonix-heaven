@@ -1,0 +1,14 @@
+Source: bloonix-heaven
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 8)
+Build-Depends-Indep: perl
+Maintainer: Jonny Schulz <js@bloonix.de>
+Standards-Version: 3.9.3
+Homepage: http://www.bloonix.de/
+
+Package: bloonix-heaven
+Architecture: all
+Depends: ${perl:Depends}, bloonix-core, bloonix-fcgi, libjson-perl, libjson-xs-perl, liblog-handler-perl
+Description: Bloonix web framework
+ The Bloonix mvc web framework.

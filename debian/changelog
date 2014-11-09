@@ -1,0 +1,27 @@
+bloonix-heaven (0.4-1) unstable; urgency=low
+
+    * Updated the license information.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 03 Nov 2014 21:10:04 +0100
+
+bloonix-heaven (0.3-1) unstable; urgency=low
+
+    * Disable die_on_errors by default so that the logger
+      does not die on errors.
+
+ -- Jonny Schulz <js@bloonix.de>  Fri, 24 Oct 2014 18:18:33 +0200
+
+bloonix-heaven (0.2-1) unstable; urgency=low
+
+    * Improved the error handling.
+    * Added parameter "minimal" to validate().
+    * Deleted ModelLoader.pm.
+
+ -- Jonny Schulz <js@bloonix.de>  Thu, 16 Oct 2014 16:26:10 +0200
+
+bloonix-heaven (0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 25 Aug 2014 15:00:00 +0200
+

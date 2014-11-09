@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>The Title</title>
+<meta charset="UTF-8" />
+<meta name="author" content="The Author" />
+<meta name="description" content="The Description" />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="shortcut icon" href="/public/img/favicon.ico" />
+<link rel="stylesheet" href="/public/css/@@NAME@@.css?v=<% version.css %>" media="screen" />
+<script src="/public/js/@@NAME@@.js?v=<% version.js %>"></script>
+</head>
+<body>
+<h1>Hello World!</h1>
+</body>
+</html>

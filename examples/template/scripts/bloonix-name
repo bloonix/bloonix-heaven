@@ -1,0 +1,6 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib "/srv/bloonix/@@NAME@@/lib";
+use Bloonix;
+Bloonix->run(@ARGV);
