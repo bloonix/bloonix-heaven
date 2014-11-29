@@ -519,10 +519,15 @@ sub __process_output {
 sub __process_size {
     my $self = shift;
 
-    $self->log->notice(
-        "current process size:",
-        sprintf("%.1fMB", $self->fcgi->statm->{resident} / 1048576)
-    );
+    # stats are maybe not available
+    if ($self->fcgi->statm) {
+        if ($self->fcgi->statm->{resident} && $self->fcgi->statm->{resident} > 0) {
+            $self->log->notice(
+                "current process size:",
+                sprintf("%.1fMB", $self->fcgi->statm->{resident} / 1048576)
+            );
+        }
+    }
 }
 
 sub __internal_error {
