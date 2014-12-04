@@ -606,13 +606,31 @@ The order to execute a action is
     Controller  ->  end
     Root        ->  end
 
-If a path does not match
+Each auto() method is executed on the way to the action.
 
-    Root  ->  default
+As example if the URL path /foo/bar/baz/action routes to
+MyApp::Controller::Foo::Bar::Baz::action(), the execution order is
 
-If an error occurs
+    MyApp::Controller::Root::auto()
+    MyApp::Controller::Foo::auto()
+    MyApp::Controller::Foo::Bar::auto()
+    MyApp::Controller::Foo::Bar::Baz::auto()
+    MyApp::Controller::Foo::Bar::Baz::begin()
+    MyApp::Controller::Foo::Bar::Baz::action()
+    MyApp::Controller::Foo::Bar::Baz::end()
+    MyApp::Controller::Root::end()
 
-    Root  ->  error
+If any auto() method returns false, the order is aborted.
+
+If a path does not match, then
+
+    Root::default()
+
+is executed. If an error occurs, then
+
+    Root::error()
+
+is executed.
 
 =head1 METHODS
 
