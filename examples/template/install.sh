@@ -33,6 +33,7 @@ else
 fi
 
 mv /srv/bloonix/$NAME/scripts/bloonix-name /srv/bloonix/$NAME/scripts/bloonix-$NAME
+sed -i "s/@@NAME@@/$NAME/g" /srv/bloonix/$NAME/scripts/bloonix-$NAME
 
 sed -i 's!@@CACHEDIR@@!/var/cache!g' $R
 sed -i 's!@@CONFDIR@@!/etc!g' $R
