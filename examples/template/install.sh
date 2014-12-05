@@ -32,7 +32,7 @@ else
     sed -i "s/@@NAME@@/$NAME/g" /etc/init.d/bloonix-$NAME
 fi
 
-mv /srv/bloonix/$NAME/scripts/bloonix-name mv /srv/bloonix/$NAME/scripts/bloonix-$NAME
+mv /srv/bloonix/$NAME/scripts/bloonix-name /srv/bloonix/$NAME/scripts/bloonix-$NAME
 
 sed -i 's!@@CACHEDIR@@!/var/cache!g' $R
 sed -i 's!@@CONFDIR@@!/etc!g' $R
