@@ -1,5 +1,5 @@
 [Unit]
-Description=Bloonix Web
+Description=Web application based on Bloonix: $NAME
 After=network.target
 
 [Service]
