@@ -33,9 +33,13 @@ sub process {
 
 sub parse {
     my ($self, $template) = @_;
-    my $file = join("/", $self->path, $template);
 
-    $self->log->notice("parsing new template $file");
+    $self->log->notice("parsing new template $template");
+
+    my $inner = $self->include($template);
+    my $content = $self->{outer};
+    $content =~ s!<%\s+content\s+%>!$inner!g;
+    $content =~ s!<%\s+include (.+?)\s+%>!$self->include($1)!eg;
 
     my $code = join("\n",
         'sub {',
@@ -44,12 +48,7 @@ sub parse {
         ''
     );
 
-    open my $fh, "<", $file
-        or die "unable to open template '$file' for reading: $!";
-
-    while (my $row = <$fh>) {
-        chomp $row;
-
+    foreach my $row (split /\n/, $content) {
         if ($row =~ s/^(\s*)%\s//) {
             $code .= "    $1";
             $code .= $row;
@@ -85,11 +84,23 @@ sub parse {
         $code .= '$content .= "\n";' . "\n";
     }
 
-    close $fh;
-
     $code .= "    return \$content;\n}";
     $self->log->debug("code\n$code");
     $self->cache->{$template} = eval $code;
+}
+
+sub include {
+    my ($self, $template) = @_;
+    my $file = join("/", $self->path, $template);
+
+    $self->log->notice("parsing new template $file");
+
+    open my $fh, "<", $file
+        or die "unable to open template '$file' for reading: $!";
+    my $content = do { local $/; <$fh> };
+    close $fh;
+
+    return $content;
 }
 
 sub escape {
@@ -107,8 +118,21 @@ sub validate {
     my %opts = Params::Validate::validate(@_, {
         path => {
             type => Params::Validate::SCALAR
+        },
+        wrapper => {
+            type => Params::Validate::SCALAR,
+            optional => 1
         }
     });
+
+    if ($opts{wrapper}) {
+        my $file = join("/", $opts{path}, $opts{wrapper});
+        open my $fh, "<", $file or die "unable to open wrapper '$file' for reading: $!";
+        $opts{outer} = do { local $/; <$fh> };
+        close $fh;
+    } else {
+        $opts{outer} = "<% content %>";
+    }
 
     return \%opts;
 }

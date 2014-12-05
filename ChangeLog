@@ -2,6 +2,7 @@ bloonix-heaven (0.5) released at 2014-XX-XX
 
     * Fixed collection process size statistics. /proc/$pid/statm
       is not available on other operation systems.
+    * Implemented include and wrapper for Heaven/Template.pm.
 
 bloonix-heaven (0.4) released at 2014-11-03
 
