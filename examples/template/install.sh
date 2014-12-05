@@ -37,5 +37,6 @@ sed -i 's!@@CONFDIR@@!/etc!g' $R
 sed -i 's!@@LIBDIR@@!/var/lib!g' $R
 sed -i 's!@@LOGDIR@@!/var/log!g' $R
 sed -i 's!@@RUNDIR@@!/var/run!g' $R
+sed -i 's!@@SRVDIR@@!/srv!g' $R
 sed -i 's!@@USRLIBDIR@@!/usr/lib!g' $R
 
