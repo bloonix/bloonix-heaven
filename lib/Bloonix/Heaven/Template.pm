@@ -6,13 +6,14 @@ use Params::Validate qw();
 use base qw(Bloonix::Accessor);
 
 __PACKAGE__->mk_accessors(qw/c cache log path/);
+my $CACHE = {};
 
 sub new {
     my $class = shift;
     my $c = shift;
     my $opts = $class->validate(@_);
     $opts->{c} = $c;
-    $opts->{cache} = {};
+    $opts->{cache} = $CACHE;
     $opts->{log} = $c->log;
     return bless $opts, $class;
 }
@@ -39,7 +40,7 @@ sub parse {
     my $inner = $self->include($template);
     my $content = $self->{outer};
     $content =~ s!<%\s+content\s+%>!$inner!g;
-    $content =~ s!<%\s+include (.+?)\s+%>!$self->include($1)!eg;
+    while ($content =~ s!<%\s+include (.+?)\s+%>!$self->include($1)!eg){}
 
     my $code = join("\n",
         'sub {',
