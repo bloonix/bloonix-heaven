@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.4
+Version: 0.5
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,15 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Mon Dec 08 2014 Jonny Schulz <js@bloonix.de> - 0.5-1
+- Fixed collection process size statistics. /proc/$pid/statm
+  is not available on other operation systems.
+- Implemented include and wrapper for Heaven/Template.pm.
+- Making the template cache persistent.
+- Added argument cache_enabled to enable/disable the template
+  cache.
+- Fixed undefined values warning in templates. Added // ''.
+- Added line numbers to the template code.
 * Mon Nov 03 2014 Jonny Schulz <js@bloonix.de> - 0.4-1
 - Updated the license information.
 * Fri Oct 24 2014 Jonny Schulz <js@bloonix.de> - 0.3-1

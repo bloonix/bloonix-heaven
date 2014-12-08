@@ -1,9 +1,13 @@
-bloonix-heaven (0.5) released at 2014-XX-XX
+bloonix-heaven (0.5) released at 2014-12-08
 
     * Fixed collection process size statistics. /proc/$pid/statm
       is not available on other operation systems.
     * Implemented include and wrapper for Heaven/Template.pm.
     * Making the template cache persistent.
+    * Added argument cache_enabled to enable/disable the template
+      cache.
+    * Fixed undefined values warning in templates. Added // ''.
+    * Added line numbers to the template code.
 
 bloonix-heaven (0.4) released at 2014-11-03
 
