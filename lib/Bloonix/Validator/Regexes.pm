@@ -55,7 +55,7 @@ my $rx_false      = qr/^0\z/;
 #
 my $rx_email = qr/
     ^                                       # The beginning of the hell
-    [a-zA-Z0-9]+([\.\-\+_][a-zA-Z0-9]+)*    # this is the name part
+    [a-zA-Z0-9]+([\.\-\+=_][a-zA-Z0-9]+)*   # this is the name part
     @                                       # delimiter between the name and host
     [a-zA-Z0-9]+([\.\-][a-zA-Z0-9]+)*       # subdomain with domain name
     \.                                      # delimiter betwenn domain and tld
