@@ -1,3 +1,9 @@
+bloonix-heaven (0.6-1) unstable; urgency=low
+
+    * Regex for E-Mail addresses extended. The sign "=" is now allowed.
+
+ -- Jonny Schulz <js@bloonix.de>  Thu, 11 Dec 2014 19:12:44 +0100
+
 bloonix-heaven (0.5-1) unstable; urgency=low
 
     * Fixed collection process size statistics. /proc/$pid/statm

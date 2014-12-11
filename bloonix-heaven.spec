@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.5
+Version: 0.6
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,8 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Thu Dec 11 2014 Jonny Schulz <js@bloonix.de> - 0.6-1
+- Regex for E-Mail addresses extended. The sign "=" is now allowed.
 * Mon Dec 08 2014 Jonny Schulz <js@bloonix.de> - 0.5-1
 - Fixed collection process size statistics. /proc/$pid/statm
   is not available on other operation systems.
