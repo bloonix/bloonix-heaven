@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.6
+Version: 0.7
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,8 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Fri Dec 12 2014 Jonny Schulz <js@bloonix.de> - 0.7-1
+- New accessor text() added.
 * Thu Dec 11 2014 Jonny Schulz <js@bloonix.de> - 0.6-1
 - Regex for E-Mail addresses extended. The sign "=" is now allowed.
 * Mon Dec 08 2014 Jonny Schulz <js@bloonix.de> - 0.5-1

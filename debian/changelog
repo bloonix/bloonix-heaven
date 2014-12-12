@@ -1,3 +1,9 @@
+bloonix-heaven (0.7-1) unstable; urgency=low
+
+    * New accessor text() added.
+
+ -- Jonny Schulz <js@bloonix.de>  Fri, 12 Dec 2014 11:00:57 +0100
+
 bloonix-heaven (0.6-1) unstable; urgency=low
 
     * Regex for E-Mail addresses extended. The sign "=" is now allowed.

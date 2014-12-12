@@ -1,3 +1,7 @@
+bloonix-heaven (0.7) released at 2014-12-12
+
+    * New accessor text() added.
+
 bloonix-heaven (0.6) released at 2014-12-11
 
     * Regex for E-Mail addresses extended. The sign "=" is now allowed.

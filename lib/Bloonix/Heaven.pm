@@ -29,7 +29,7 @@ __PACKAGE__->mk_accessors(qw/model view controller base root/);
 __PACKAGE__->mk_accessors(qw/action action_path auto args route/);
 __PACKAGE__->mk_accessors(qw/config config_base log plugin/);
 __PACKAGE__->mk_accessors(qw/fcgi req request res response version/);
-__PACKAGE__->mk_accessors(qw/stash session user lang validator tz json/);
+__PACKAGE__->mk_accessors(qw/stash session user lang text validator tz json/);
 
 sub run {
     my $class = shift;
