@@ -1,6 +1,7 @@
 bloonix-heaven (0.7) released at 2014-12-12
 
     * New accessor text() added.
+    * Improved variable handling in templates.
 
 bloonix-heaven (0.6) released at 2014-12-11
 

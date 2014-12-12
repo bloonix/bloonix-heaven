@@ -65,10 +65,11 @@ sub parse {
         'sub { # 1',
         '    my ($c, $stash) = @_; # 2',
         '    my $content = ""; # 3',
+        '    my $value; # 4',
         ''
     );
 
-    my $i = 4;
+    my $i = 5;
 
     foreach my $row (split /\n/, $content) {
         if ($row =~ s/^(\s*)%\s//) {
@@ -97,7 +98,7 @@ sub parse {
                 }
                 $part .= " // '';";
             } elsif ($part =~ /<%=\s+(.+?)\s+%>/) {
-                $part = '$content .= '. $1 ." // '';";
+                $part = '$value = ""; $value = '. $1 .'; $content .= $value'." // '';";
             } elsif ($part ne "") {
                 $part = $self->escape($part);
                 $part = '$content .= ' . '"' . $part . '";';
