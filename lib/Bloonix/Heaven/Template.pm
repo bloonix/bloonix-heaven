@@ -81,7 +81,7 @@ sub parse {
         }
 
         if ($row !~ /<%/) {
-            $code .= '    $content .= '. '"' . $self->escape($row) . '\n";' . " # $i\n";
+            $code .= '    $content .= '. "'" . $self->escape($row) . "'" . ' . "\n";' . " # $i\n";
             $i++;
             next;
         }
@@ -101,7 +101,7 @@ sub parse {
                 $part = '$value = ""; $value = '. $1 .'; $content .= $value'." // '';";
             } elsif ($part ne "") {
                 $part = $self->escape($part);
-                $part = '$content .= ' . '"' . $part . '";';
+                $part = '$content .= ' . "'" . $part . "';";
             }
         }
 
@@ -132,9 +132,7 @@ sub include {
 sub escape {
     my ($self, $str) = @_;
     $str =~ s/\\/\\\\/g;
-    $str =~ s/"/\\"/g;
-    $str =~ s/\$/\\\$/g;
-    $str =~ s/\@/\\\@/g;
+    $str =~ s/'/\\'/g;
     return $str;
 }
 
