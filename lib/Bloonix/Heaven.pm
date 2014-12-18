@@ -499,7 +499,8 @@ sub __process_action_controller {
 sub __process_view {
     my $self  = shift;
 
-    if ($self->view) {
+    # Do not process the view if a redirect is active!
+    if (!$self->res->redirect_active && $self->view) {
         $self->log->info("process view");
 
         eval { $self->view->process($self) };

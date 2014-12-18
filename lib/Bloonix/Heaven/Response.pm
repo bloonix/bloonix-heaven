@@ -106,7 +106,7 @@ use warnings;
 use JSON;
 
 use base qw(Bloonix::Heaven::Accessor);
-__PACKAGE__->mk_accessors(qw/body cgi log content_type content_type_printed is_json/);
+__PACKAGE__->mk_accessors(qw/body cgi log content_type content_type_printed is_json redirect_active/);
 
 sub new {
     my ($class, $cgi, $log) = @_;
@@ -115,9 +115,10 @@ sub new {
         cgi => $cgi,
         log => $log,
         body => "",
-        header => { },
+        header => {},
         content_type => "text/html",
         content_type_printed => 0,
+        redirect_active => 0
     }, $class;
 
     return $self;
@@ -136,8 +137,9 @@ sub cookie {
 sub redirect {
     my ($self, $location, $status) = @_;
     $location ||= "/";
-    $status   ||= 302;
-    $self->{header}->{status}   = "$status Found";
+    $status ||= 302;
+    $self->{redirect_active} = 1;
+    $self->{header}->{status} = "$status Found";
     $self->{header}->{location} = $location;
 }   
 
