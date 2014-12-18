@@ -1,3 +1,7 @@
+bloonix-heaven (0.8) released at 2014-12-18
+
+    * Now views are not processed if a redirect is active.
+
 bloonix-heaven (0.7) released at 2014-12-12
 
     * New accessor text() added.
