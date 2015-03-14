@@ -5,10 +5,12 @@ use warnings;
 use Bloonix::Config;
 use Bloonix::HangUp;
 use Bloonix::FCGI;
+use Bloonix::ProcManager;
 use Bloonix::Validator;
 use Bloonix::Timezone;
 use Getopt::Long qw(:config no_ignore_case);
 use Log::Handler;
+use Params::Validate qw();
 use POSIX qw(getgid getuid setgid setuid);
 use JSON;
 
@@ -28,59 +30,58 @@ use base qw(Bloonix::Heaven::Accessor);
 __PACKAGE__->mk_accessors(qw/model view controller base root/);
 __PACKAGE__->mk_accessors(qw/action action_path auto args route/);
 __PACKAGE__->mk_accessors(qw/config config_base log plugin/);
-__PACKAGE__->mk_accessors(qw/fcgi req request res response version/);
+__PACKAGE__->mk_accessors(qw/proc fcgi req request res response version/);
 __PACKAGE__->mk_accessors(qw/stash session user lang text validator tz json/);
 
 sub run {
     my $class = shift;
     my $self = bless { version => {} }, $class;
 
-    eval {
-        $self->__load_argv(@_);
-        $self->__load_config;
-        $self->__load_permissions;
-        $self->__load_logger;
-        $self->__load_plugin;
-        $self->__init_app;
-        $self->__load_model;
-        $self->__load_view;
-        $self->__load_controller;
-        $self->__init_routes;
-    };
+    # Init the machine
+    $self->__init;
 
-    if ($@) {
-        print STDERR $@;
-        if ($self->log) {
-            $self->log->error($@);
-        }
-        exit 9;
-    }
-
+    # Exception handler
     $self->log->info("set die and warn handler");
     local $SIG{__DIE__} = sub { $self->log->trace(error => @_) };
     local $SIG{__WARN__} = sub { $self->log->trace(warning => @_) };
 
-    # FCGI handles sig HUP, TERM and INT
     $self->log->info("load fcgi manager");
-    my $fcgi = Bloonix::FCGI->new(
-        $self->config->{proc_manager} // ()
-    );
-
+    my $fcgi = Bloonix::FCGI->new($self->config->{fcgi_options});
     $self->fcgi($fcgi);
+
+    # ProcManager handles sig HUP, TERM, INT, USR1, USR2
+    $self->log->info("load proc manager");
+    my $proc = Bloonix::ProcManager->new($self->config->{proc_manager_options});
+    $self->proc($proc);
+
+    # Go Bloonix go :-)
     $self->log->info("start processing");
 
-    while (my $cgi = $fcgi->accept) {
-        eval { $self->__dispatch_request($cgi) };
+    # Reload is ignored
+    while (!$proc->done || $proc->reload) {
+        $proc->reload(0);
+        $proc->set_status_waiting;
 
-        if ($@) {
-            $self->log->error("err:", $@);
+        while ($fcgi->accept) {
+            $proc->set_status_reading;
+            my $cgi = $fcgi->get_new_cgi;
 
-            if (!$self->response->content_type_printed) {
-                print "Content-Type: text/html\n\n";
+            if ($cgi) {
+                if ($self->__is_server_status($cgi, $proc)) {
+                    last;
+                }
+
+                $proc->set_status_processing(
+                    client  => $cgi->remote_addr,
+                    request => join(" ", $cgi->request_method, $cgi->request_uri)
+                );
+
+                eval { $self->__dispatch_request($cgi) };
+
+                if ($@) {
+                    $self->__sw_error($@);
+                }
             }
-
-            print "<h1>Software error!</h1>\n";
-            print "<h3>Please contact the administrator.</h3>\n";
         }
 
         # Falling back to the default timezone
@@ -99,6 +100,64 @@ sub load {
     );
 
     $self->{_controller}->{$controller} //= { };
+}
+
+sub __is_server_status {
+    my ($self, $req, $proc) = @_;
+    my $server_status = $self->config->{server_status};
+
+    if ($server_status->{enabled} eq "yes" && $req->path_info eq $server_status->{location}) {
+        my $authkey = $req->param("authkey") // "";
+        my $addr = $req->remote_addr || "n/a";
+        my $allow_from = $server_status->{allow_from};
+
+        if ($allow_from->{all} || $allow_from->{$addr} || ($server_status->{authkey} && $server_status->{authkey} eq $authkey)) {
+            $self->log->info("server status request from $addr - access allowed");
+            $self->proc->set_status_sending;
+
+            if (defined $req->param("plain")) {
+                print "Content-Type: text/plain\n\n";
+                print $self->proc->get_plain_server_status;
+            } else {
+                print "Content-Type: application/json\n\n";
+                print $self->proc->get_json_server_status(pretty => $req->param("pretty"));
+            }
+        } else {
+            $self->log->warning("server status request from $addr - access denied");
+            print "Content-Type: text/plain\n\n";
+            print "access denied\n";
+        }
+
+        return 1;
+    }
+
+    return undef;
+}
+
+sub __init {
+    my $self = shift;
+
+    eval {
+        $self->__load_argv(@_);
+        $self->__load_config;
+        $self->__validate_config;
+        $self->__load_permissions;
+        $self->__load_logger;
+        $self->__load_plugin;
+        $self->__init_app;
+        $self->__load_model;
+        $self->__load_view;
+        $self->__load_controller;
+        $self->__init_routes;
+    };
+
+    if ($@) {
+        print STDERR $@;
+        if ($self->log) {
+            $self->log->error($@);
+        }
+        exit 9;
+    }
 }
 
 sub __load_argv {
@@ -185,6 +244,62 @@ sub __load_config {
     }
 
     $ENV{TZ} = $self->config->{system}->{timezone};
+}
+
+sub __validate_config {
+    my $self = shift;
+    my $config = $self->config;
+
+    if (!$config->{proc_manager}) {
+        die "missing proc manager configuration";
+    }
+
+    foreach my $key (keys %{ $config->{proc_manager} }) {
+        if ($key =~ /^(port|listen|lockfile)\z/) {
+            $config->{fcgi_options}->{$key} = delete $config->{proc_manager}->{$key};
+        } elsif ($key eq "server_status") {
+            $config->{server_status} = delete $config->{proc_manager}->{$key};
+        } else {
+            $config->{proc_manager_options}->{$key} = delete $config->{proc_manager}->{$key};
+        }
+    }
+
+    $config->{server_status} = $self->__validate_server_status($config->{server_status} || ());
+}
+
+sub __validate_server_status {
+    my $self = shift;
+
+    my %opts = Params::Validate::validate(@_, {
+        enabled => {
+            type => Params::Validate::SCALAR,
+            default => "yes",
+            regex => qr/^(0|1|no|yes)\z/
+        },
+        location => {
+            type => Params::Validate::SCALAR,
+            default => "/server-status"
+        },
+        allow_from => {
+            type => Params::Validate::SCALAR,
+            default => "127.0.0.1"
+        },
+        authkey => {
+            type => Params::Validate::SCALAR,
+            optional => 1
+        }
+    });
+
+    if ($opts{enabled} eq "no") {
+        $opts{enabled} = 0;
+    }
+
+    $opts{allow_from} =~ s/\s//g;
+    $opts{allow_from} = {
+        map { $_, 1 } split(/,/, $opts{allow_from})
+    };
+
+    return \%opts;
 }
 
 sub __load_logger {
@@ -521,11 +636,11 @@ sub __process_size {
     my $self = shift;
 
     # stats are maybe not available
-    if ($self->fcgi->statm) {
-        if ($self->fcgi->statm->{resident} && $self->fcgi->statm->{resident} > 0) {
+    if ($self->proc->statm) {
+        if ($self->proc->statm->{resident} && $self->proc->statm->{resident} > 0) {
             $self->log->notice(
                 "current process size:",
-                sprintf("%.1fMB", $self->fcgi->statm->{resident} / 1048576)
+                sprintf("%.1fMB", $self->proc->statm->{resident} / 1048576)
             );
         }
     }
@@ -569,6 +684,20 @@ sub __internal_error {
             '</html>',
         )
     );
+}
+
+# If really all goes wrong...
+sub __sw_error {
+    my ($self, $error) = @_;
+
+    $self->log->error("err:", $error);
+
+    if (!$self->response->content_type_printed) {
+        print "Content-Type: text/html\n\n";
+    }
+
+    print "<h1>Internal software error!</h1>\n";
+    print "<h3>Please contact the administrator.</h3>\n";    
 }
 
 1;
@@ -709,13 +838,6 @@ to placeholders that ends with _id.
 
 =head2 base
 
-=head1 PREREQUISITES
-
-    CGI::Fast
-    Getopt::Long
-    Log::Handler
-    POSIX
-
 =head1 EXPORTS
 
 No exports.
@@ -726,6 +848,6 @@ Jonny Schulz <support(at)bloonix.de>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2009-2014 by Jonny Schulz. All rights reserved.
+Copyright (C) 2009 by Jonny Schulz. All rights reserved.
 
 =cut

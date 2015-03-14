@@ -1,3 +1,7 @@
+bloonix-heaven (0.9) released at 2015-XX-XX
+
+    * ProcManager and FCGI were splittet into 2 modules.
+
 bloonix-heaven (0.8) released at 2014-12-18
 
     * Now views are not processed if a redirect is active.
