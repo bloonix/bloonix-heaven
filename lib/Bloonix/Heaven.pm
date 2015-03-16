@@ -6,6 +6,7 @@ use Bloonix::Config;
 use Bloonix::HangUp;
 use Bloonix::FCGI;
 use Bloonix::ProcManager;
+use Bloonix::ProcHelper;
 use Bloonix::Validator;
 use Bloonix::Timezone;
 use Getopt::Long qw(:config no_ignore_case);
@@ -23,14 +24,13 @@ use Bloonix::Heaven::Model;
 use Bloonix::Heaven::View;
 use Bloonix::Heaven::Template;
 
-our $DEBUG = 0;
-our $VERSION = "0.8";
+our $VERSION = "0.9";
 
 use base qw(Bloonix::Heaven::Accessor);
 __PACKAGE__->mk_accessors(qw/model view controller base root/);
 __PACKAGE__->mk_accessors(qw/action action_path auto args route/);
 __PACKAGE__->mk_accessors(qw/config config_base log plugin/);
-__PACKAGE__->mk_accessors(qw/proc fcgi req request res response version/);
+__PACKAGE__->mk_accessors(qw/proc proc_helper fcgi req request res response version/);
 __PACKAGE__->mk_accessors(qw/stash session user lang text validator tz json/);
 
 sub run {
@@ -46,29 +46,29 @@ sub run {
     local $SIG{__WARN__} = sub { $self->log->trace(warning => @_) };
 
     $self->log->info("load fcgi manager");
-    my $fcgi = Bloonix::FCGI->new($self->config->{fcgi_options});
+    my $fcgi = Bloonix::FCGI->new($self->config->{fcgi_server});
     $self->fcgi($fcgi);
 
     # ProcManager handles sig HUP, TERM, INT, USR1, USR2
     $self->log->info("load proc manager");
-    my $proc = Bloonix::ProcManager->new($self->config->{proc_manager_options});
+    my $proc = Bloonix::ProcManager->new($self->config->{proc_manager});
     $self->proc($proc);
 
     # Go Bloonix go :-)
     $self->log->info("start processing");
 
     # Reload is ignored
-    while (!$proc->done || $proc->reload) {
+    while (!$proc->done) {
         $proc->reload(0);
         $proc->set_status_waiting;
 
-        while ($fcgi->accept) {
+        if ($fcgi->accept) {
             $proc->set_status_reading;
             my $cgi = $fcgi->get_new_cgi;
 
             if ($cgi) {
                 if ($self->__is_server_status($cgi, $proc)) {
-                    last;
+                    next;
                 }
 
                 $proc->set_status_processing(
@@ -100,38 +100,6 @@ sub load {
     );
 
     $self->{_controller}->{$controller} //= { };
-}
-
-sub __is_server_status {
-    my ($self, $req, $proc) = @_;
-    my $server_status = $self->config->{server_status};
-
-    if ($server_status->{enabled} eq "yes" && $req->path_info eq $server_status->{location}) {
-        my $authkey = $req->param("authkey") // "";
-        my $addr = $req->remote_addr || "n/a";
-        my $allow_from = $server_status->{allow_from};
-
-        if ($allow_from->{all} || $allow_from->{$addr} || ($server_status->{authkey} && $server_status->{authkey} eq $authkey)) {
-            $self->log->info("server status request from $addr - access allowed");
-            $self->proc->set_status_sending;
-
-            if (defined $req->param("plain")) {
-                print "Content-Type: text/plain\n\n";
-                print $self->proc->get_plain_server_status;
-            } else {
-                print "Content-Type: application/json\n\n";
-                print $self->proc->get_json_server_status(pretty => $req->param("pretty"));
-            }
-        } else {
-            $self->log->warning("server status request from $addr - access denied");
-            print "Content-Type: text/plain\n\n";
-            print "access denied\n";
-        }
-
-        return 1;
-    }
-
-    return undef;
 }
 
 sub __init {
@@ -254,17 +222,12 @@ sub __validate_config {
         die "missing proc manager configuration";
     }
 
-    foreach my $key (keys %{ $config->{proc_manager} }) {
-        if ($key =~ /^(port|listen|lockfile)\z/) {
-            $config->{fcgi_options}->{$key} = delete $config->{proc_manager}->{$key};
-        } elsif ($key eq "server_status") {
-            $config->{server_status} = delete $config->{proc_manager}->{$key};
-        } else {
-            $config->{proc_manager_options}->{$key} = delete $config->{proc_manager}->{$key};
-        }
+    if (!$config->{fcgi_server}) {
+        die "missing fcgi server configuration";
     }
 
-    $config->{server_status} = $self->__validate_server_status($config->{server_status} || ());
+    $config->{server_status} ||= {};
+    $config->{server_status} = $self->__validate_server_status($config->{server_status});
 }
 
 sub __validate_server_status {
@@ -275,10 +238,6 @@ sub __validate_server_status {
             type => Params::Validate::SCALAR,
             default => "yes",
             regex => qr/^(0|1|no|yes)\z/
-        },
-        location => {
-            type => Params::Validate::SCALAR,
-            default => "/server-status"
         },
         allow_from => {
             type => Params::Validate::SCALAR,
@@ -426,6 +385,47 @@ sub __load_controller {
     }
 
     $self->log->info("all controller loaded");
+}
+
+sub __is_server_status {
+    my ($self, $cgi, $proc) = @_;
+
+    my $status = $self->config->{server_status}
+        or return undef;
+
+    if ($status->{enabled} && $cgi->path_info eq "/server-status") {
+        my $addr = $cgi->remote_addr || "n/a";
+        my $authkey = $cgi->param("authkey") || "";
+        my $plain = defined $cgi->param("plain") ? 1 : 0;
+        my $pretty = defined $cgi->param("pretty") ? 1 : 0;
+        my $allow_from = $status->{allow_from};
+
+        $proc->set_status_processing(
+            client  => $addr,
+            request => "/server-status"
+        );
+
+        if ($allow_from->{all} || $allow_from->{$addr} || ($self->{authkey} && $self->{authkey} eq $authkey)) {
+            $self->log->info("server status request from $addr - access allowed");
+            $proc->set_status_sending;
+
+            if ($plain) {
+                print "Content-Type: text/plain\n\n";
+                print $proc->get_plain_server_status;
+            } else {
+                print "Content-Type: application/json\n\n";
+                print $proc->get_json_server_status(pretty => $pretty);
+            }
+        } else {
+            $self->log->warning("server status request from $addr - access denied");
+            print "Content-Type: text/plain\n\n";
+            print "access denied\n";
+        }
+
+        return 1;
+    }
+
+    return undef;
 }
 
 sub __dispatch_request {
