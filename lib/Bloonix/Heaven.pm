@@ -6,7 +6,6 @@ use Bloonix::Config;
 use Bloonix::HangUp;
 use Bloonix::FCGI;
 use Bloonix::ProcManager;
-use Bloonix::ProcHelper;
 use Bloonix::Validator;
 use Bloonix::Timezone;
 use Getopt::Long qw(:config no_ignore_case);

@@ -1,4 +1,4 @@
-bloonix-heaven (0.9) released at 2015-XX-XX
+bloonix-heaven (0.9) released at 2015-03-21
 
     * ProcManager and FCGI were splittet into 2 modules.
 

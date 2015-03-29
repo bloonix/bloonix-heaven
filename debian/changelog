@@ -1,3 +1,9 @@
+bloonix-heaven (0.9-1) unstable; urgency=low
+
+    * ProcManager and FCGI were splittet into 2 modules.
+
+ -- Jonny Schulz <js@bloonix.de>  Sat, 21 Mar 2015 22:16:27 +0100
+
 bloonix-heaven (0.8-1) unstable; urgency=low
 
     * Now views are not processed if a redirect is active.

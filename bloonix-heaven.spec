@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.8
+Version: 0.9
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,8 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Sat Mar 21 2015 Jonny Schulz <js@bloonix.de> - 0.9-1
+- ProcManager and FCGI were splittet into 2 modules.
 * Thu Dec 18 2014 Jonny Schulz <js@bloonix.de> - 0.8-1
 - Now views are not processed if a redirect is active.
 * Fri Dec 12 2014 Jonny Schulz <js@bloonix.de> - 0.7-1
