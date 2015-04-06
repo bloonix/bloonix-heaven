@@ -225,6 +225,10 @@ sub __validate_config {
         die "missing fcgi server configuration";
     }
 
+    if (!$config->{proc_manager}->{lockfile}) {
+        $config->{proc_manager}->{lockfile} = "/var/lib/bloonix/ipc/webgui.%P.lock";
+    }
+
     $config->{server_status} ||= {};
     $config->{server_status} = $self->__validate_server_status($config->{server_status});
 }
