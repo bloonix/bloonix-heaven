@@ -407,7 +407,7 @@ use Bloonix::Validator::ResultSet;
 use base qw(Bloonix::Accessor);
 
 __PACKAGE__->mk_accessors(qw/regex constraint function data/);
-__PACKAGE__->mk_accessors(qw/defaults mandatory options schema log/);
+__PACKAGE__->mk_accessors(qw/defaults mandatory optional options schema log/);
 
 our $VERSION = "0.2";
 
@@ -422,6 +422,7 @@ sub new {
     $self->{postcheck}  = { }; # postcheck routines
     $self->{options}    = { }; # options or multioptions of a form
     $self->{mandatory}  = [ ]; # mandatory options
+    $self->{optional}   = [ ]; # optional parameters
     $self->{defaults}   = { }; # all defaults of a form
     $self->{autotrim}   //= 1;
     $self->{autodie}    //= 0;
@@ -494,6 +495,8 @@ sub put {
 
         if ($is_mandatory) {
             push @{$self->{mandatory}}, $param;
+        } else {
+            push @{$self->{optional}}, $param;
         }
     }
 }
