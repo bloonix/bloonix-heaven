@@ -407,9 +407,9 @@ use Bloonix::Validator::ResultSet;
 use base qw(Bloonix::Accessor);
 
 __PACKAGE__->mk_accessors(qw/regex constraint function data/);
-__PACKAGE__->mk_accessors(qw/defaults options schema log/);
+__PACKAGE__->mk_accessors(qw/defaults mandatory options schema log/);
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my ($class, %opts) = @_;
@@ -421,6 +421,7 @@ sub new {
     $self->{params}     = { }; # all parameter of a form
     $self->{postcheck}  = { }; # postcheck routines
     $self->{options}    = { }; # options or multioptions of a form
+    $self->{mandatory}  = [ ]; # mandatory options
     $self->{defaults}   = { }; # all defaults of a form
     $self->{autotrim}   //= 1;
     $self->{autodie}    //= 0;
@@ -464,6 +465,8 @@ sub put {
     }
 
     foreach my $param (keys %$rules) {
+        my $is_mandatory = 1;
+
         if (ref($rules->{$param}) ne "HASH") {
             die "invalid data structure for parameter $param";
         }
@@ -479,6 +482,7 @@ sub put {
                 if ($rule eq "default") {
                     $self->{defaults}->{$param} = $rules->{$param}->{$rule};
                 }
+                $is_mandatory = 0;
             } elsif ($rule eq "alias") {
                 $self->{alias}->{$param} = $rules->{$param}->{$rule};
             } elsif (!$self->function->{$rule} && $rule ne "postcheck") {
@@ -487,6 +491,10 @@ sub put {
         }
 
         $self->{params}->{$param} = $rules->{$param};
+
+        if ($is_mandatory) {
+            push @{$self->{mandatory}}, $param;
+        }
     }
 }
 
