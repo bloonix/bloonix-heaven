@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.9
+Version: 0.10
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,8 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Wed Apr 15 2015 Jonny Schulz <js@bloonix.de> - 0.10-1
+- Bloonix::Validator can now return mandatory and optional parameters.
 * Sat Mar 21 2015 Jonny Schulz <js@bloonix.de> - 0.9-1
 - ProcManager and FCGI were splittet into 2 modules.
 * Thu Dec 18 2014 Jonny Schulz <js@bloonix.de> - 0.8-1
