@@ -84,9 +84,10 @@ use warnings;
 use base qw(Bloonix::Accessor);
 use Bloonix::Timeperiod;
 
-__PACKAGE__->mk_accessors(qw/date datetime datehourmin daytime preparedate from_to_time timeperiod/);
-
-our $VERSION = "0.1";
+__PACKAGE__->mk_accessors(qw/
+    date datetime datehourmin daytime preparedate from_to_time timeperiod
+    param_value
+/);
 
 my $rx_year  = qr/\d{4}/;
 my $rx_month = qr/(?:0[1-9]|1[0-2])/;
@@ -102,7 +103,8 @@ my %constraint = (
     datehourmin => \&constraint_datehourmin,
     preparedate => \&constraint_preparedate,
     from_to_time => \&constraint_from_to_time,
-    timeperiod => \&constraint_timeperiod
+    timeperiod => \&constraint_timeperiod,
+    param_value => \&constraint_param_value
 );
 
 sub new {
@@ -255,6 +257,22 @@ sub constraint_timeperiod {
     my $time = $_[0];
 
     return Bloonix::Timeperiod->parse($time) ? 1 : 0;
+}
+
+sub constraint_param_value {
+    if (!$_[0] || !length $_[0]) {
+        return 1;
+    }
+
+    foreach my $pv (split /[\r\n]+/, $_[0]) {
+        next if $pv =~ /^\s*\z/;
+        next if $pv =~ /^\s*#/;
+        if ($pv !~ /^\s*[a-zA-Z_0-9\.]+\s*=\s*([^\s].*)\z/) {
+            return undef;
+        }
+    }
+
+    return 1;
 }
 
 sub check_date {

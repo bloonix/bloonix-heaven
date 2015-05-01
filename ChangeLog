@@ -1,3 +1,7 @@
+bloonix-heaven (0.11) released at 2015-XX-XX
+
+    * Bloonix::Validator: new constraint param_value
+
 bloonix-heaven (0.10) released at 2015-04-14
 
     * Bloonix::Validator can now return mandatory and optional parameters.
