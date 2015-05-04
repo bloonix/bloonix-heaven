@@ -418,16 +418,11 @@ sub new {
     $self->{constraint} = Bloonix::Validator::Constraints->new();
     $self->{regex}      = Bloonix::Validator::Regexes->new();
     $self->{function}   = Bloonix::Validator::Functions->new();
-    $self->{params}     = { }; # all parameter of a form
-    $self->{postcheck}  = { }; # postcheck routines
-    $self->{options}    = { }; # options or multioptions of a form
-    $self->{mandatory}  = [ ]; # mandatory options
-    $self->{optional}   = [ ]; # optional parameters
-    $self->{defaults}   = { }; # all defaults of a form
     $self->{autotrim}   //= 1;
     $self->{autodie}    //= 0;
     $self->{debug}      //= 0;
     $self->{log}        //= Log::Handler->get_logger("bloonix");
+    $self->delete;
 
     return $self;
 }
@@ -510,10 +505,12 @@ sub params {
 sub delete {
     my $self  = shift;
 
-    $self->{params}  = { };
-    $self->{defaults} = { };
-    $self->{options} = { };
-    $self->{postcheck} = { };
+    $self->{params}    = { }; # all parameter of a form
+    $self->{postcheck} = { }; # postcheck routines
+    $self->{options}   = { }; # options or multioptions of a form
+    $self->{mandatory} = [ ]; # mandatory options
+    $self->{optional}  = [ ]; # optional parameters
+    $self->{defaults}  = { }; # all defaults of a form
 }
 
 sub validate {
