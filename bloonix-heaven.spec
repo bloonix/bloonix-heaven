@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.10
+Version: 0.11
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,9 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Thu May 07 2015 Jonny Schulz <js@bloonix.de> - 0.11-1
+- Bloonix::Validator: new constraint param_value
+- Bloonix::Validator: fixed duplicate entries
 * Wed Apr 15 2015 Jonny Schulz <js@bloonix.de> - 0.10-1
 - Bloonix::Validator can now return mandatory and optional parameters.
 * Sat Mar 21 2015 Jonny Schulz <js@bloonix.de> - 0.9-1

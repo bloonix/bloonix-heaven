@@ -1,4 +1,4 @@
-bloonix-heaven (0.11) released at 2015-XX-XX
+bloonix-heaven (0.11) released at 2015-05-07
 
     * Bloonix::Validator: new constraint param_value
     * Bloonix::Validator: fixed duplicate entries

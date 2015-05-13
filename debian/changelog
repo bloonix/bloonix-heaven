@@ -1,3 +1,10 @@
+bloonix-heaven (0.11-1) unstable; urgency=low
+
+    * Bloonix::Validator: new constraint param_value
+    * Bloonix::Validator: fixed duplicate entries
+
+ -- Jonny Schulz <js@bloonix.de>  Thu, 07 May 2015 14:25:51 +0200
+
 bloonix-heaven (0.10-1) unstable; urgency=low
 
     * Bloonix::Validator can now return mandatory and optional parameters.
