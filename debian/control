@@ -9,6 +9,6 @@ Homepage: http://www.bloonix.de/
 
 Package: bloonix-heaven
 Architecture: all
-Depends: ${perl:Depends}, bloonix-core, bloonix-fcgi, libjson-perl, libjson-xs-perl, liblog-handler-perl
+Depends: ${perl:Depends}, bloonix-core (>= 0.23), bloonix-fcgi, libjson-perl, libjson-xs-perl, liblog-handler-perl
 Description: Bloonix web framework
  The Bloonix mvc web framework.
