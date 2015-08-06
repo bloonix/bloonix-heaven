@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.11
+Version: 0.12
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,8 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Thu Aug 06 2015 Jonny Schulz <js@bloonix.de> - 0.12-1
+- Bloonix::Validator: added a postcheck method.
 * Thu May 07 2015 Jonny Schulz <js@bloonix.de> - 0.11-1
 - Bloonix::Validator: new constraint param_value
 - Bloonix::Validator: fixed duplicate entries
