@@ -202,11 +202,6 @@ want to add or overwrite parameters, use put() instead!
 
     $validator->set(
         param-name => {
-            # Do you want to check this param with other parameter?
-            # All params with postcheck=alias will be passed to a code
-            # reference you passed with $validator->postcheck.
-            postcheck => "alias",
-
             # parameter handling
             default     => $default,  # string or reference or whatever
             optional    => 1,         # This option is a little bit confusing
@@ -251,10 +246,9 @@ want to add or overwrite parameters, use put() instead!
     });
 
     $validator->postcheck(
-        alias => sub {
-            # $self is the object of Bloonix::Validator
-            my ($data) = @_;
-            ...
+        sub {
+            my $data = shift;
+            # ... validation and return failed parameter
         }
     );
 
@@ -264,47 +258,19 @@ The same like set() but the complete set will not be deleted first.
 
 =head2 postcheck()
 
-With this method it's possible to define different postcheck routines.
+With this method it's possible to define a postcheck.
 
-The method expects an alias for each code reference that is passed.
-In the following example 2 postchecks are passed with the aliases "check_user"
-and "check_session". Now all parameter that are set with this postcheck
-alias will be passed with the key and value to the code reference.
+The method expects a code reference.
 
     $validator->postcheck(
-        check_user => sub {
-            my ($self, $params) = @_;
+        sub {
+            my $data = shift;
 
-            # $params is a hash reference
-            if (!$params->{user_id} && !$params->{username}) {
-                return qw(user_id username);
-            }
-        },
-        check_session => sub {
-            my ($self, $params) = @_;
+            # ... validate data ...
 
-            if (!$params->{session_id} && !$params->{session_string}) {
-                return qw(session_id session_string);
-            }
+            return ("foo", "bar"); # failed keys
         },
     );
-
-    $validator->set(
-        user_id => {
-            postcheck => "check_user",
-        },
-        username => {
-            postcheck => "check_user",
-        },
-        session_id => {
-            postcheck => "check_session",
-        },
-        session_string => {
-            postcheck => "check_session",
-        },
-    );
-
-Please note that postcheck parameters are optional and can be missed.
 
 =head2 options()
 
@@ -428,10 +394,10 @@ sub new {
 }
 
 sub postcheck {
-    my ($self, $alias, $code) = @_;
+    my ($self, $code) = @_;
 
     if ($code) {
-        $self->{postcheck}->{$alias} = $code;
+        push @{$self->{postcheck}}, $code;
     }
 
     return $self->{postcheck};
@@ -481,7 +447,7 @@ sub put {
                 $is_mandatory = 0;
             } elsif ($rule eq "alias") {
                 $self->{alias}->{$param} = $rules->{$param}->{$rule};
-            } elsif (!$self->function->{$rule} && $rule ne "postcheck") {
+            } elsif (!$self->function->{$rule}) {
                 die "invalid rule '$rule' of param '$param'";
             }
         }
@@ -506,7 +472,7 @@ sub delete {
     my $self  = shift;
 
     $self->{params}    = { }; # all parameter of a form
-    $self->{postcheck} = { }; # postcheck routines
+    $self->{postcheck} = [ ]; # postcheck routines
     $self->{options}   = { }; # options or multioptions of a form
     $self->{mandatory} = [ ]; # mandatory options
     $self->{optional}  = [ ]; # optional parameters
@@ -663,7 +629,6 @@ sub _validate {
     my $result = Bloonix::Validator::ResultSet->new();
     my $params = $self->{params};
     my $opts   = $self->{opts};
-    my %post   = ();
     my $func   = ();
 
     $result->{alias} = $self->{alias};
@@ -692,11 +657,7 @@ sub _validate {
             }
 
             foreach my $rule (keys %$rules) {
-                if ($rule =~ /^(?:cut_newlines|prepare|postprod|default|optional|postcheck|alias)\z/) {
-                    if ($rule eq "postcheck") {
-                        my $postcheck_alias = $rules->{$rule};
-                        $post{$postcheck_alias}{$param} = $data->{$param};
-                    }
+                if ($rule =~ /^(?:cut_newlines|prepare|postprod|default|optional|alias)\z/) {
                     next;
                 }
 
@@ -717,25 +678,18 @@ sub _validate {
         } elsif (exists $rules->{default} && $opts->{force_defaults}) {
             $data->{$param} = $rules->{default};
             $result->valid($param => $data->{$param});
-        } elsif (!$rules->{optional} && !$rules->{postcheck} && !$opts->{ignore_missing}) {
+        } elsif (!$rules->{optional} && !$opts->{ignore_missing}) {
             $result->missed($param);
         }
     }
 
-    if (scalar keys %post) {
-        foreach my $alias (keys %post) {
-            if ($self->{debug}) {
-                warn "VALIDATOR: post check $alias";
-            }
-
-            my $code = $self->postcheck->{$alias}
-                or die "postcheck $alias does no exists";
-
-            my @failed = &$code($post{$alias});
+    if (@{$self->{postcheck}}) {
+        foreach my $code (@{$self->{postcheck}}) {
+            my @failed = &$code($data);
 
             foreach my $param (@failed) {
                 $result->remove(valid => $param);
-                $result->invalid($param => $post{$alias}{$param});
+                $result->invalid($param => $data->{$param});
             }
         }
     }

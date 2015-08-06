@@ -1,3 +1,7 @@
+bloonix-heaven (0.12) released at 2015-08-06
+
+    * Bloonix::Validator: added a postcheck method.
+
 bloonix-heaven (0.11) released at 2015-05-07
 
     * Bloonix::Validator: new constraint param_value
