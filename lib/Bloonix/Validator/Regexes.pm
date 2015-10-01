@@ -24,10 +24,10 @@ __PACKAGE__->mk_accessors(qw/
     digit number float alphas non_alphas
     bool true false email
     time date datetime datehourmin
-    ipv4 ipv6 ipv6_strict ipv6_long ipaddr
+    ipv4 ipv4net ipv6 ipv6net
+    ipv6_strict ipv6_long
+    ipaddr ipaddrnet
 /);
-
-our $VERSION = "0.1";
 
 my $rx_digit      = qr/^\d\z/;
 my $rx_number     = qr/^\d+\z/;
@@ -84,19 +84,22 @@ my $rx_port = qr/
     )\z
 /x;
 
-my $rx_ipv4 = qr/^
+my $rx_ipv4_base = qr/
     (?: 25[0-5] | 2[0-4][0-9] | 1[0-9][0-9] | [1-9][0-9] | [0-9] ) \.
     (?: 25[0-5] | 2[0-4][0-9] | 1[0-9][0-9] | [1-9][0-9] | [0-9] ) \.
     (?: 25[0-5] | 2[0-4][0-9] | 1[0-9][0-9] | [1-9][0-9] | [0-9] ) \.
     (?: 25[0-5] | 2[0-4][0-9] | 1[0-9][0-9] | [1-9][0-9] | [0-9] )
-\z/x;
+/x;
+
+my $rx_ipv4 = qr/^$rx_ipv4_base\z/;
+my $rx_ipv4net = qr/^$rx_ipv4_base\/([0-9]|[12][0-9]|3[012])\z/;
 
 # A single block of a ipv6 address
 my $ipv6a = '[0-9A-Fa-f]{1,4}';
 # No leading 0 is allowed
 my $ipv6s = '([1-9A-Fa-f][0-9A-Fa-f]{1,3}|[0-9A-Fa-f])';
 
-my $rx_ipv6 = qr/^
+my $rx_ipv6_base = qr/
     (
         ($ipv6a:){7}$ipv6a
         |($ipv6a:){6}:$ipv6a
@@ -115,7 +118,10 @@ my $rx_ipv6 = qr/^
         |:(:$ipv6a){1,7}
         |($ipv6a:){1,7}:
     )
-\z/x;
+/x;
+
+my $rx_ipv6 = qr/^$rx_ipv6_base\z/;
+my $rx_ipv6net = qr/^$rx_ipv6_base\/([0-9]|[1-9][0-9]|1[01][0-9]|12[0-8])\z/;
 
 my $rx_ipv6_strict = qr/^
     (
@@ -146,6 +152,10 @@ my $rx_ipaddr = qr/
     ($rx_ipv4|$rx_ipv6)
 /x;
 
+my $rx_ipaddrnet = qr/
+    ($rx_ipv4net|$rx_ipv6net)
+/x;
+
 sub new {
     my $class = shift;
 
@@ -160,10 +170,13 @@ sub new {
         false       => $rx_false,
         email       => $rx_email,
         ipv4        => $rx_ipv4,
+        ipv4net     => $rx_ipv4net,
         ipv6        => $rx_ipv6,
+        ipv6net     => $rx_ipv6net,
         ipv6_strict => $rx_ipv6_strict,
         ipv6_long   => $rx_ipv6_long,
         ipaddr      => $rx_ipaddr,
+        ipaddrnet   => $rx_ipaddrnet,
         time        => $rx_time,
         date        => $rx_date,
         datetime    => $rx_datetime,

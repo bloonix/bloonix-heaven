@@ -1,3 +1,7 @@
+bloonix-heaven (0.13) released at 2015-10-01
+
+    * Added regexp to validate ipv4 and ipv6 addresses with network.
+
 bloonix-heaven (0.12) released at 2015-08-06
 
     * Bloonix::Validator: added a postcheck method.
