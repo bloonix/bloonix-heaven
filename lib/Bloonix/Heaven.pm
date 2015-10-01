@@ -23,7 +23,7 @@ use Bloonix::Heaven::Model;
 use Bloonix::Heaven::View;
 use Bloonix::Heaven::Template;
 
-our $VERSION = "0.12";
+our $VERSION = "0.13";
 
 use base qw(Bloonix::Heaven::Accessor);
 __PACKAGE__->mk_accessors(qw/model view controller base root/);
