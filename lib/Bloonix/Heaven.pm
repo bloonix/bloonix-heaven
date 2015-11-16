@@ -6,7 +6,7 @@ use Bloonix::Config;
 use Bloonix::HangUp;
 use Bloonix::FCGI;
 use Bloonix::ProcManager;
-use Bloonix::Validator;
+use Bloonix::Validate;
 use Bloonix::Timezone;
 use Getopt::Long qw(:config no_ignore_case);
 use Log::Handler;
@@ -459,7 +459,7 @@ sub __init_request {
     $self->{session} = Bloonix::Heaven::Session->new;
     $self->{req} = $self->{request}  = $cgi;
     $self->{res} = $self->{response} = Bloonix::Heaven::Response->new($cgi, $log);
-    $self->{validator} = Bloonix::Validator->new;
+    $self->{validator} = Bloonix::Validate->new;
     $self->log->set_pattern("%X", "user_id", "0");
     $self->log->set_pattern("%Y", "username", "n/a");
     $self->view->render("");
