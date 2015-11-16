@@ -1,6 +1,6 @@
 Summary: Bloonix Heaven
 Name: bloonix-heaven
-Version: 0.12
+Version: 0.13
 Release: 1%{dist}
 License: Commercial
 Group: Utilities/System
@@ -49,6 +49,10 @@ rm -rf %{buildroot}
 %{_mandir}/man3/*
 
 %changelog
+* Mon Nov 16 2015 Jonny Schulz <js@bloonix.de> - 0.13-1
+- Added regexp to validate ipv4 and ipv6 addresses with network.
+- Moved Bloonix::Validator to the core package and renamed it to
+  Bloonix::Validate.
 * Thu Aug 06 2015 Jonny Schulz <js@bloonix.de> - 0.12-1
 - Bloonix::Validator: added a postcheck method.
 * Thu May 07 2015 Jonny Schulz <js@bloonix.de> - 0.11-1
